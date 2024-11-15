@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("AI_DATABASE_URL")
+}
+
+model User {
+  id                String            @id @default(cuid())
+  clerkId           String?           @unique
+  name              String?
+  email             String?           @unique
+  emailVerified     DateTime?
+  image             String?
+  comments          Comment[]
+  conversionMetrics ConversionMetric[] // Relation to ConversionMetric
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  content   String
+  blogSlug  String
+  userId    String
+  parentId  String?
+  likes     Int       @default(0)
+  likedBy   String[]  @default([])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction)
+  replies   Comment[] @relation("CommentReplies")
+
+  @@index([blogSlug])
+  @@index([userId])
+  @@index([parentId])
+}
+model ConversionMetric {
+  id               String   @id @default(cuid())
+  userId           String
+  processingTime   Float    @default(0)
+  complexityScore  Float    @default(0)
+  compressionRatio Float    @default(1)
+  contentSize      Int      @default(0)
+  success          Boolean  @default(true)
+  apiCalls         Int      @default(1)
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
