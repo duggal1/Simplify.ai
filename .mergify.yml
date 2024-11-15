@@ -1,0 +1,24 @@
+pull_request_rules:
+  - name: Automatic merge during office hours
+    description: Merge when PR passes all branch protection during office hours
+    conditions:
+      - schedule = Mon-Fri 09:00-17:00[America/Los_Angeles]
+    actions:
+      merge:
+  - name: Automatic merge
+    description: Merge when PR passes all branch protection and has label automerge
+    conditions:
+      - label = automerge
+    actions:
+      merge:
+  - name: Request review from team
+    description: Request review from a specific team when checks are green.
+    conditions:
+      - -closed
+      - "#approved-reviews-by = 0"
+      - "#changes-requested-reviews-by = 0"
+      - review-requested != @TEAM_NAME_HERE
+    actions:
+      request_reviews:
+        teams:
+          - TEAM_NAME_HERE
